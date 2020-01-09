@@ -5,10 +5,10 @@ import INetworkState, { IPosition } from '../models/states/INetworkState';
 
 export default class App extends Component<{}, INetworkState> {
   canvasWrapperRef: any;
-  ctx: any;
+  ctx: CanvasRenderingContext2D | any;
   network: any;
   container: any;
-  canvas: any;
+  canvas: any | HTMLCanvasElement;
   nodes: any;
   rect: IPosition = {
     h: null,
@@ -21,6 +21,7 @@ export default class App extends Component<{}, INetworkState> {
   constructor(props: any) {
     super(props);
     this.state = {
+      showInspectorPane: false,
       drag: false,
       options: {
         autoResize: true,
@@ -141,10 +142,10 @@ export default class App extends Component<{}, INetworkState> {
           }
         ],
         edges: [
-          {
-            from: 0,
-            to: 9
-          },
+          // {
+          //   from: 0,
+          //   to: 9
+          // },
           {
             from: 0,
             to: 1
@@ -213,11 +214,12 @@ export default class App extends Component<{}, INetworkState> {
       }
     };
     this.canvasWrapperRef = React.createRef();
-    // this.ctx = this.canvasWrapperRef!.current.getContext('2d');
+    // this.toggleInspectorPane = this.toggleInspectorPane.bind(this);
   }
 
   componentDidMount() {
-    console.log('ref:', this.canvasWrapperRef!.current.Network.body.nodes);
+    let that = this;
+    // console.log('ref:', this.canvasWrapperRef!.current.Network.body.nodes);
     this.container = this.canvasWrapperRef!.current!.Network.canvas.frame;
     this.network = this.canvasWrapperRef!.current!.Network;
     this.canvas = this.canvasWrapperRef!.current!.Network.canvas.frame.canvas;
@@ -227,6 +229,10 @@ export default class App extends Component<{}, INetworkState> {
     this.container.oncontextmenu = function() {
       return false;
     };
+
+    this.network.on('stabilizationIterationsDone', function() {
+      that.network.setOptions({ physics: false });
+    });
 
     this.saveDrawingSurface();
 
@@ -241,6 +247,18 @@ export default class App extends Component<{}, INetworkState> {
         this.container.style.cursor = 'default';
         this.selectNodesFromHighlight();
       }
+    });
+
+    this.network.on('click', (e: any) => {
+      console.log(this.network);
+      if(e.nodes.length > 0){
+
+        this.setState({ showInspectorPane: true, nodeData:{label: this.network.body.nodes[e.nodes[0]].options.label, id: e.nodes[0]} })
+      }else {
+        this.setState({ showInspectorPane: false, nodeData: undefined});
+      }
+      this.network.setOptions({ physics: { stabilization: { fit: false } } });
+      this.network.stabilize();
     });
 
     this.network.on('zoom', (e: any) => {
@@ -330,7 +348,6 @@ export default class App extends Component<{}, INetworkState> {
         nodesIdInDrawing.push(curNode.id);
       }
     }
-    console.log(selectedNodes);
     this.network.selectNodes(nodesIdInDrawing);
   }
 
@@ -363,14 +380,29 @@ export default class App extends Component<{}, INetworkState> {
     return (
       <div
         id="graph"
-        className="App"
+        className="graph"
         style={{
           height: '100vh',
           width: '100vw'
         }}
       >
         <Graph ref={this.canvasWrapperRef} graph={this.state.graph} options={this.state.options} />
+        {this.state.showInspectorPane && (
+          <div className="inspector-div">
+            <span>Inspector Pane</span>
+            <hr />
+            {this.state.nodeData && (
+              <h2>
+                {this.state.nodeData?.id} - {this.state.nodeData?.label}
+              </h2>
+            )}
+
+            <div className="close-btn"></div>
+          </div>
+        )}
       </div>
     );
   }
+
+  toggleInspectorPane() {}
 }

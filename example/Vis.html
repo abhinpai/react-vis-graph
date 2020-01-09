@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <title>Vis Network | Other | Clustering by Zoom Level</title>
+
+    <script type="text/javascript" src="Vis_files/vis-network.js"></script>
+    <style type="text/css">
+      .vis-overlay {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 10;
+      }
+      .vis-active {
+        box-shadow: 0 0 10px #86d5f8;
+      }
+    </style>
+
+    <style type="text/css">
+      #mynetwork {
+        width: 1000px;
+        height: 600px;
+        border: 1px solid lightgray;
+      }
+
+      p {
+        max-width: 600px;
+      }
+
+      h4 {
+        margin-bottom: 3px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div id="mynetwork" style="width: 100vw; height: 100vh; position: absolute;">
+      <div
+        class="vis-network"
+        style="position: relative; overflow: hidden; touch-action: pan-y; user-select: none; "
+        tabindex="900"
+        width="100vw"
+        height="100vh"
+      >
+        <canvas
+          style="position: relative; touch-action: none; user-select: none; "
+          width="100vw"
+          height="100vh"
+        />
+      </div>
+    </div>
+    <div class="context" style="display:none; position: relative;" id="contextMenu">
+      <div class="context_item">
+        <div class="inner_item">
+          Copy
+        </div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      var clusterIndex = 0;
+      var clusters = [];
+      var lastClusterZoomLevel = 0;
+      var clusterFactor = 3.04327990376403;
+
+      // create an array with nodes
+      var nodes = [
+        { id: 0, label: '0', group: 0 },
+        { id: 1, label: '1', group: 0 },
+        { id: 2, label: '2', group: 0 },
+        { id: 3, label: '3', group: 1 },
+        { id: 4, label: '4', group: 1 },
+        { id: 5, label: '5', group: 1 },
+        { id: 6, label: '6', group: 2 },
+        { id: 7, label: '7', group: 2 },
+        { id: 8, label: '8', group: 2 },
+        { id: 9, label: '9', group: 3 },
+        { id: 10, label: '10', group: 3 },
+        { id: 11, label: '11', group: 3 },
+        { id: 12, label: '12', group: 4 },
+        { id: 13, label: '13', group: 4 },
+        { id: 14, label: '14', group: 4 },
+        { id: 15, label: '15', group: 5 },
+        { id: 16, label: '16', group: 5 },
+        { id: 17, label: '17', group: 5 },
+        { id: 18, label: '18', group: 6 },
+        { id: 19, label: '19', group: 6 },
+        { id: 20, label: '20', group: 6 },
+        { id: 21, label: '21', group: 7 },
+        { id: 22, label: '22', group: 7 },
+        { id: 23, label: '23', group: 7 },
+        { id: 24, label: '24', group: 8 },
+        { id: 25, label: '25', group: 8 },
+        { id: 26, label: '26', group: 8 },
+        { id: 27, label: '27', group: 9 },
+        { id: 28, label: '28', group: 9 },
+        { id: 29, label: '29', group: 9 }
+      ];
+
+      var edges = [
+        { from: 1, to: 0 },
+        { from: 2, to: 0 },
+        { from: 4, to: 3 },
+        { from: 5, to: 4 },
+        { from: 4, to: 0 },
+        { from: 7, to: 6 },
+        { from: 8, to: 7 },
+        { from: 7, to: 0 },
+        { from: 10, to: 9 },
+        { from: 11, to: 10 },
+        { from: 10, to: 4 },
+        { from: 13, to: 12 },
+        { from: 14, to: 13 },
+        { from: 13, to: 0 },
+        { from: 16, to: 15 },
+        { from: 17, to: 15 },
+        { from: 15, to: 10 },
+        { from: 19, to: 18 },
+        { from: 20, to: 19 },
+        { from: 19, to: 4 },
+        { from: 22, to: 21 },
+        { from: 23, to: 22 },
+        { from: 22, to: 13 },
+        { from: 25, to: 24 },
+        { from: 26, to: 25 },
+        { from: 25, to: 7 },
+        { from: 28, to: 27 },
+        { from: 29, to: 28 },
+        { from: 28, to: 0 }
+      ];
+
+      var data = {
+        nodes: nodes,
+        edges: edges
+      };
+
+      var options = {
+        nodes: {
+          widthConstraint: 50,
+          heightConstraint: 50,
+          shape: 'circle'
+        }
+      };
+
+      // setting the zoom limit
+      var afterzoomlimit = {
+        scale: 1.0
+      };
+
+      var container = document.getElementById('mynetwork');
+      var network = new vis.Network(container, data, options);
+
+      network.on('zoom', function(params) {
+        if (params.direction == '+' && params.scale > 0.8) {
+          changeShape(params.scale);
+        }
+        if (params.direction == '-' && params.scale < 0.8) {
+          resetShape(params.scale);
+        }
+      });
+
+      network.on('oncontext', function(params) {
+        console.log(params.pointer.DOM);
+        params.event.preventDefault();
+        var menu = document.getElementById('contextMenu');
+        menu.style.display = 'block';
+        menu.style.top = (params.pointer.DOM.y+4) +"px";
+        menu.style.left = (params.pointer.DOM.x+ 30) +"px";
+        console.log(menu);
+        // menu.css({ top: params.pointer.DOM.y, left: params.pointer.DOM.x, display='block' });
+
+        // params.event.preventDefault();
+        // $(".custom-menu").finish().toggle(100);
+        // $(".custom-menu").css({
+        //     top: params.event.pageY + "px",
+        //     left: params.event.pageX + "px"
+        // });
+      });
+
+      function changeShape(scale) {
+        var options = {
+          nodes: {
+            widthConstraint: 1000,
+            heightConstraint: 100,
+            shape: 'box'
+          }
+        };
+        network.setOptions(options);
+        network.setOptions({ physics: { stabilization: { fit: false } } });
+        network.stabilize();
+      }
+
+      function resetShape(scale) {
+        network.setOptions({
+          nodes: {
+            shape: 'circle',
+            borderWidth: 2
+          }
+        });
+      }
+
+      function limitZooming() {
+        if (network.getScale() >= 2.0) {
+          network.moveTo({
+            scale: 2.0
+          });
+        }
+
+        if (network.getScale() <= 0.3) {
+          network.moveTo({
+            scale: 0.3
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

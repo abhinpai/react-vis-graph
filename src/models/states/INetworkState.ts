@@ -1,10 +1,17 @@
 export default interface INetworkState {
+  nodeData?: INodeData;
+  showInspectorPane?: boolean;
   drag: boolean;
   options: IOptions;
   graph :{
     nodes: INodes['node'][];
     edges: IEdges['edge'][];
   }
+}
+
+interface INodeData {
+  id: string | number;
+  label: string;
 }
 
 interface INodes {
@@ -18,6 +25,10 @@ interface INodes {
     id: string | number;
     label: string;
     group?: number;
+    title?: any;
+    x?: number;
+    y?: number;
+    value?: number;
   };
 }
 

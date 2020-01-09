@@ -91,7 +91,7 @@ class Graph extends Component {
       autoResize: false,
       edges: {
         smooth: false,
-        color: "#000000",
+        // color: "#000000",
         width: 0.5,
         arrows: {
           to: {
