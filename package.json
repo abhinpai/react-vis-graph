@@ -10,10 +10,15 @@
     "@types/node": "^12.12.22",
     "@types/react": "^16.9.17",
     "@types/react-dom": "^16.9.4",
+    "lodash": "^4.17.15",
+    "node-sass": "^4.13.0",
+    "prop-types": "^15.7.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
     "react-scripts": "3.3.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "uuid": "^3.3.3",
+    "vis-network": "^6.5.0"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -22,6 +27,11 @@
     "eject": "react-scripts eject",
     "storybook": "start-storybook"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/abhinpai/react-vis-graph"
+  },
+  "author": "Abhin Pai",
   "eslintConfig": {
     "extends": "react-app"
   },
