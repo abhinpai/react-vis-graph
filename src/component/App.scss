@@ -5,7 +5,7 @@
     background-color: grey;
     -webkit-transition: all 0.5s ease;
 	-moz-transition: all 0.5s ease;
-	transition: all 0.5s ease;
+	transition: all 0.15s ease;
 }
 
 .inspector-div-hide {
@@ -13,7 +13,19 @@
 }
 
 .graph {
+    // position: absolute;
     display: flex !important;
 }
+
+.contextMenu{
+    position: absolute;
+    display: none;
+}
+
+.contextMenuEdge{
+    position: absolute;
+    display: none;
+}
+
 
 

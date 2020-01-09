@@ -1,13 +1,19 @@
+/* eslint-disable import/first */
 import React, { Component } from 'react';
 import './App.scss';
 import Graph from '../core/lib/Graph';
 import INetworkState, { IPosition } from '../models/states/INetworkState';
+import { Menu, Icon } from 'antd';
+const { SubMenu } = Menu;
+import 'antd/dist/antd.css';
 
 export default class App extends Component<{}, INetworkState> {
   canvasWrapperRef: any;
   ctx: CanvasRenderingContext2D | any;
   network: any;
   container: any;
+  nodeContextMenu: any;
+  edgeContextMenu: any;
   canvas: any | HTMLCanvasElement;
   nodes: any;
   rect: IPosition = {
@@ -21,6 +27,8 @@ export default class App extends Component<{}, INetworkState> {
   constructor(props: any) {
     super(props);
     this.state = {
+      showNodeContextMenu: false,
+      showEdgeContextMenu: false,
       showInspectorPane: false,
       drag: false,
       options: {
@@ -142,10 +150,6 @@ export default class App extends Component<{}, INetworkState> {
           }
         ],
         edges: [
-          // {
-          //   from: 0,
-          //   to: 9
-          // },
           {
             from: 0,
             to: 1
@@ -214,12 +218,10 @@ export default class App extends Component<{}, INetworkState> {
       }
     };
     this.canvasWrapperRef = React.createRef();
-    // this.toggleInspectorPane = this.toggleInspectorPane.bind(this);
   }
 
   componentDidMount() {
     let that = this;
-    // console.log('ref:', this.canvasWrapperRef!.current.Network.body.nodes);
     this.container = this.canvasWrapperRef!.current!.Network.canvas.frame;
     this.network = this.canvasWrapperRef!.current!.Network;
     this.canvas = this.canvasWrapperRef!.current!.Network.canvas.frame.canvas;
@@ -250,18 +252,48 @@ export default class App extends Component<{}, INetworkState> {
     });
 
     this.network.on('click', (e: any) => {
-      console.log(this.network);
-      if(e.nodes.length > 0){
-
-        this.setState({ showInspectorPane: true, nodeData:{label: this.network.body.nodes[e.nodes[0]].options.label, id: e.nodes[0]} })
-      }else {
-        this.setState({ showInspectorPane: false, nodeData: undefined});
+      this.hideEdgeContextMenu();
+      this.hideNodeContextMenu();
+      if (e.nodes.length > 0) {
+        this.network.focus(e.nodes[0]);
+        this.setState({
+          showInspectorPane: true,
+          nodeData: { label: this.network.body.nodes[e.nodes[0]].options.label, id: e.nodes[0] }
+        });
+      } else {
+        this.setState({ showInspectorPane: false, nodeData: undefined });
       }
-      this.network.setOptions({ physics: { stabilization: { fit: false } } });
+      this.network.setOptions({ physics: { stabilization: { fit: true } } });
       this.network.stabilize();
     });
 
+    this.network.on('oncontext', (e: any) => {
+      let selectedNode = this.network.getNodeAt(e.pointer.DOM);
+      let selectedEdge = this.network.getEdgeAt(e.pointer.DOM);
+      this.nodeContextMenu = document.getElementById('nodeContextMenu');
+      this.edgeContextMenu = document.getElementById('edgeContextMenu');
+      e.event.preventDefault();
+      if (selectedNode) {
+        this.hideEdgeContextMenu();
+        this.setState({ showNodeContextMenu: true });
+        this.nodeContextMenu!.style.display = 'block';
+        this.nodeContextMenu!.style.top = e.pointer.DOM.y + 'px';
+        this.nodeContextMenu!.style.left = e.pointer.DOM.x + 'px';
+      } else if (selectedEdge) {
+        this.hideNodeContextMenu();
+        this.setState({ showEdgeContextMenu: true });
+        this.edgeContextMenu!.style.display = 'block';
+        this.edgeContextMenu!.style.top = e.pointer.DOM.y + 'px';
+        this.edgeContextMenu!.style.left = e.pointer.DOM.x + 'px';
+      } else {
+        this.hideNodeContextMenu();
+        this.hideNodeContextMenu();
+      }
+    });
+
     this.network.on('zoom', (e: any) => {
+      this.hideNodeContextMenu();
+      this.hideNodeContextMenu();
       if (e.direction === '+' && e.scale > 0.8) {
         this.changeShape();
       }
@@ -272,6 +304,8 @@ export default class App extends Component<{}, INetworkState> {
 
     this.container.addEventListener('mousemove', (e: any) => {
       if (this.state.drag) {
+        this.hideNodeContextMenu();
+        this.hideNodeContextMenu();
         this.restoreDrawingSurface();
         this.rect.w =
           e.pageX -
@@ -400,9 +434,135 @@ export default class App extends Component<{}, INetworkState> {
             <div className="close-btn"></div>
           </div>
         )}
+        {this.renderNodeMenu()}
+        {this.renderEdgeMenu()}
       </div>
     );
   }
 
-  toggleInspectorPane() {}
+  renderNodeMenu() {
+    return (
+      <div id="nodeContextMenu" className="contextMenu">
+        <Menu style={{ width: 200 }} mode="vertical">
+          <SubMenu
+            key="sub1"
+            title={
+              <span>
+                <Icon type="mail" />
+                <span>Node Selection</span>
+              </span>
+            }
+          >
+            <Menu.ItemGroup title="Item 1">
+              <Menu.Item key="1">Option 1</Menu.Item>
+              <Menu.Item key="2">Option 2</Menu.Item>
+            </Menu.ItemGroup>
+            <Menu.ItemGroup title="Iteom 2">
+              <Menu.Item key="3">Option 3</Menu.Item>
+              <Menu.Item key="4">Option 4</Menu.Item>
+            </Menu.ItemGroup>
+          </SubMenu>
+          <SubMenu
+            key="sub2"
+            title={
+              <span>
+                <Icon type="appstore" />
+                <span>Navigation Two</span>
+              </span>
+            }
+          >
+            <Menu.Item key="5">Option 5</Menu.Item>
+            <Menu.Item key="6">Option 6</Menu.Item>
+            <SubMenu key="sub3" title="Submenu">
+              <Menu.Item key="7">Option 7</Menu.Item>
+              <Menu.Item key="8">Option 8</Menu.Item>
+            </SubMenu>
+          </SubMenu>
+          <SubMenu
+            key="sub4"
+            title={
+              <span>
+                <Icon type="setting" />
+                <span>Navigation Three</span>
+              </span>
+            }
+          >
+            <Menu.Item key="9">Option 9</Menu.Item>
+            <Menu.Item key="10">Option 10</Menu.Item>
+            <Menu.Item key="11">Option 11</Menu.Item>
+            <Menu.Item key="12">Option 12</Menu.Item>
+          </SubMenu>
+        </Menu>
+      </div>
+    );
+  }
+
+  renderEdgeMenu() {
+    return (
+      <div id="edgeContextMenu" className="contextMenuEdge">
+        <Menu style={{ width: 200 }} mode="vertical">
+          <SubMenu
+            key="sub1"
+            title={
+              <span>
+                <Icon type="mail" />
+                <span>Edge Selection</span>
+              </span>
+            }
+          >
+            <Menu.ItemGroup title="Item 1">
+              <Menu.Item key="1">Option 1</Menu.Item>
+              <Menu.Item key="2">Option 2</Menu.Item>
+            </Menu.ItemGroup>
+            <Menu.ItemGroup title="Iteom 2">
+              <Menu.Item key="3">Option 3</Menu.Item>
+              <Menu.Item key="4">Option 4</Menu.Item>
+            </Menu.ItemGroup>
+          </SubMenu>
+          <SubMenu
+            key="sub2"
+            title={
+              <span>
+                <Icon type="appstore" />
+                <span>Navigation Two</span>
+              </span>
+            }
+          >
+            <Menu.Item key="5">Option 5</Menu.Item>
+            <Menu.Item key="6">Option 6</Menu.Item>
+            <SubMenu key="sub3" title="Submenu">
+              <Menu.Item key="7">Option 7</Menu.Item>
+              <Menu.Item key="8">Option 8</Menu.Item>
+            </SubMenu>
+          </SubMenu>
+          <SubMenu
+            key="sub4"
+            title={
+              <span>
+                <Icon type="setting" />
+                <span>Navigation Three</span>
+              </span>
+            }
+          >
+            <Menu.Item key="9">Option 9</Menu.Item>
+            <Menu.Item key="10">Option 10</Menu.Item>
+            <Menu.Item key="11">Option 11</Menu.Item>
+            <Menu.Item key="12">Option 12</Menu.Item>
+          </SubMenu>
+        </Menu>
+      </div>
+    );
+  }
+
+  hideNodeContextMenu() {
+    this.nodeContextMenu = document.getElementById('nodeContextMenu');
+    this.nodeContextMenu.style.display = 'none';
+    this.setState({ showNodeContextMenu: false });
+  }
+
+  hideEdgeContextMenu() {
+    this.edgeContextMenu = document.getElementById('edgeContextMenu');
+    this.edgeContextMenu.style.display = 'none';
+    this.setState({ showEdgeContextMenu: false });
+  }
 }

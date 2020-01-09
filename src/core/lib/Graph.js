@@ -145,6 +145,10 @@ class Graph extends Component {
       },
       identifier
     );
+    // return <div style={{position: 'absolute'}}>
+    //   <div id={identifier} ref={this.container} style={style} identifier/>
+    //   <p id="test" style= {{display: 'none', position: 'relative'}}>Hello</p>
+    // </div>
   }
 }
 

@@ -1,5 +1,7 @@
 export default interface INetworkState {
   nodeData?: INodeData;
+  showNodeContextMenu?: boolean;
+  showEdgeContextMenu?: boolean;
   showInspectorPane?: boolean;
   drag: boolean;
   options: IOptions;
