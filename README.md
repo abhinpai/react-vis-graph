@@ -1,4 +1,15 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# A Visual Graph Network React Application using Vis.Js
+
+React application (Typescript) with most of the common use cases of the Graph Network using Vis.Js
+
+### Feature Covered
+- Pinch Zoom
+- Shape change on Zoom
+- Opening the inspector pane on click of the node and edge with  meta information
+- Box Selection of the nodes and edges
+- Multiselection of the nodes and edges 
+- Double click to show and hide the children node 
+- Context menu on right click of the node and the edge
 
 ## Available Scripts
 
